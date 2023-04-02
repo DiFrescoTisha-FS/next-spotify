@@ -1,55 +1,40 @@
-// import { useSession, signIn, signOut } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react'
+import Head from 'next/head'
+import { useEffect } from 'react'
 
-// export default function Home() {
-//   const { data: session, loading } = useSession()
-
-//     const handleSignOut = () => signOut({ redirect: false, callbackUrl: '/login' })
-  
-//   return (
-//     <>
-//     <main>
-//       {/* <h1>
-//         {session ? `${session.user.name},` : ''}Welcome to{' '}
-//       </h1> */}
-//     </main>
-
-//     <div>
-//       {session ? (
-//         <>
-//           <button onClick={handleSignOut}>
-//             Sign out
-//           </button>
-//         </>
-//       ) : (
-//           <>
-//             <button onClick={signIn}>
-//               Sign in
-//             </button>
-//         </>
-//       )}
-//     </div>
-//     </>
-//   )
-// }
-
-// import Nav from '../components/Nav'
-import Sidebar from '../components/Sidebar'
-import Center from '../components/center'
 export default function Home() {
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (session?.error === 'RefreshAccessTokenError') {
+      signIn() // Force sign in to hopefully resolve error
+    }
+  }, [session])
+
   return (
-    <div className="bg-black h-screen overfolw-hidden">
-        <main className="flex">
-        <Sidebar />
-          {/* <Nav /> */}
-          <Center />
-        </main>
+    <div>
+      <Head>
+        <title>Next-Auth Refresh Tokens</title>
+      </Head>
 
+      {!session && (
+        <>
+          Not signed in <br />
+          <button onClick={signIn}>Sign in</button>
+        </>
+      )}
+      {session && (
+        <>
+          Signed in as {session.user.email} <br />
+          <button onClick={signOut}>Sign out</button>
+        </>
+      )}
 
-      <div>
-        {/* Player */}
-      </div>
-      </div>
+      {session && <pre>{JSON.stringify(session, null, 2)}</pre>}
+    </div>
   )
 }
+
+
 
 
