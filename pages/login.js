@@ -12,6 +12,8 @@ function Login({ providers }) {
           >
             Login with {provider.name}
           </button>
+          <>
+        </>
         </div>
       ))}
   </div>

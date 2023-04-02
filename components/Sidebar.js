@@ -25,11 +25,12 @@ import {
     }, [session, spotifyApi]);
 
     console.log(playlists)
+  
 
     return (
         <div className=" bg-black h-screen overflow-hidden text-gray-500 p-5 text-sm border-r border-gray-900 overflow-y-scroll scrollbar-hide h-100vh">
         <div className="space-y-4">
-            <button className="flex items-center space-x-2 hover:text-white" onClick={() => signOut()}>
+            <button className="flex items-center space-x-2 hover:text-white" onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}>
                 {/* <HomeIcon className="h-5 w-5" /> */}
                 <p>Log Out</p>
             </button>
@@ -62,11 +63,11 @@ import {
             <hr className="border-t-[0.1px]" />
   
             {/* Playlists */}
-            {playlists.map((playlist) => (
+            {/* {playlists.map((playlist) => (
                 <p key={playlist.id} className="cursor-pointer hover:text-white">
                     {playlist.name}
                 </p>
-            ))}
+            ))} */}
         </div>
         </div>
     )
