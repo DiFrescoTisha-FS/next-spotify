@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
 import clientPromise from '../../../lib/mongodb'
 import SpotifyProvider from 'next-auth/providers/spotify'
+// import spotifyApi, { LOGIN_URL } from "../../../lib/spotify";
 
 
 const SPOTIFY_AUTHORIZATION_URL =
@@ -68,31 +69,36 @@ export default NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
-      // Initial sign in
-      if (account && user) {
-        return {
-          accessToken: account.access_token,
-          accessTokenExpires: Date.now() + account.expires_in * 1000,
-          refreshToken: account.refresh_token,
-          user
+    async jwt({ token, account, user }) {
+
+        // initail sign in
+        if (account && user) {
+            return {
+                ...token,
+                accessToken: account.access_token,
+                refreshToken: account.refresh_token,
+                username: account.providerAccountId,
+                accessTokenExpires: account.expires_at * 1000, // we are handling expiry times in milliseconds hence * 1000
+            };
         }
-      }
 
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < token.accessTokenExpires) {
-        return token
-      }
+        // Return previous token if the access token has not expired yet
+        if (Date.now() < token.accessTokenExpires) {
+            console.log("EXISTING ACCESS TOKEN IS VALID")
+            return token;
+        }
 
-      // Access token has expired, try to update it
-      return refreshAccessToken(token)
+        // Access token has expired, so we need to refresh it ...
+        console.log("ACCESS TOKEN HAS EXPIRED, REFRESHING...");
+        return await refreshAccessToken(token)
     },
+
     async session({ session, token }) {
       session.user = token.user
       session.accessToken = token.accessToken
       session.error = token.error
 
-      return session
+        return session;
     }
   }
 })
