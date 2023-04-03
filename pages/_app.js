@@ -1,13 +1,23 @@
-// import '../styles/globals.css'
-// import '../styles/globals.css'
-import 'tailwindcss/tailwind.css';
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react'
+import { ChakraProvider, Grid } from '@chakra-ui/react'
 
-export default function App({ Component, pageProps: { session, ...pageProps } }
-  ) {
-      return (
-        <SessionProvider session={session}>
-          <Component {...pageProps} />
-        </SessionProvider>
-    )
+function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+	return (
+		<SessionProvider session={session}>
+			<ChakraProvider>
+				<Grid
+					sx={{
+						h: '100vh',
+						placeItems: 'center',
+						px: '5rem',
+						textAlign: 'center',
+					}}
+				>
+					<Component {...pageProps} />
+				</Grid>
+			</ChakraProvider>
+		</SessionProvider>
+	)
 }
+
+export default MyApp

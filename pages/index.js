@@ -1,39 +1,40 @@
-import { signIn, signOut, useSession } from 'next-auth/react'
-import Head from 'next/head'
-import { useEffect } from 'react'
+import React from 'react'
+import { useRouter } from 'next/router'
+import { Heading, Button, Grid } from '@chakra-ui/react'
+import { useSession, signIn, signOut } from 'next-auth/react'
 
-export default function Home() {
-  const { data: session } = useSession()
+const Home = () => {
+	const { data: session } = useSession()
 
-  useEffect(() => {
-    if (session?.error === 'RefreshAccessTokenError') {
-      signIn() // Force sign in to hopefully resolve error
-    }
-  }, [session])
+	const { push, asPath } = useRouter()
 
-  return (
-    <div>
-      <Head>
-        <title>Next-Auth Refresh Tokens</title>
-      </Head>
+	const handleSignOut = async () => {
+		const data = await signOut({ redirect: false, callbackUrl: '/some' })
 
-      {!session && (
-        <>
-          Not signed in <br />
-          <button onClick={signIn}>Sign in</button>
-        </>
-      )}
-      {session && (
-        <>
-          Signed in as {session.user.email} <br />
-          <button onClick={signOut}>Sign out</button>
-        </>
-      )}
+		push(data.url)
+	}
 
-      {session && <pre>{JSON.stringify(session, null, 2)}</pre>}
-    </div>
-  )
+	const handleSignIn = () => push(`/auth/signin?callbackUrl=${asPath}`)
+
+	return (
+		<Grid placeItems='center' gridRowGap='1rem'>
+			{session ? (
+				<>
+					<Heading>Signed in as {session.user.email}</Heading>
+					<Button onClick={handleSignOut}>Sign out</Button>
+				</>
+			) : (
+				<>
+					<Heading>You are not signed in</Heading>
+
+					<Button onClick={handleSignIn}>Sign in</Button>
+				</>
+			)}
+		</Grid>
+	)
 }
+
+export default Home
 
 
 

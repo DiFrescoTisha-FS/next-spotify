@@ -1,97 +1,32 @@
 import NextAuth from 'next-auth'
-import SpotifyProvider from 'next-auth/providers/spotify'
-
-const SPOTIFY_AUTHORIZATION_URL =
-  'https://accounts.spotify.com/authorize?' +
-    new URLSearchParams({
-        prompt: 'consent',
-        access_type: 'offline',
-        response_type: 'code'
-  })
-
-/**
- * Takes a token, and returns a new token with updated
- * `accessToken` and `accessTokenExpires`. If an error occurs,
- * returns the old token and an error property
- */
-async function refreshAccessToken(token) {
-  try {
-    const url =
-      'https://accounts.spotify.com/api/token?' +
-      new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-        grant_type: 'refresh_token',
-        refresh_token: token.refreshToken
-      })
-
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      method: 'POST'
-    })
-
-    const refreshedTokens = await response.json()
-
-    if (!response.ok) {
-      throw refreshedTokens
-      console.log(refreshedTokens)
-    }
-
-    return {
-      ...token,
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken // Fall back to old refresh token
-    }
-  } catch (error) {
-    console.log(error)
-
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError'
-    }
-  }
-}
+import SpotifyProvider from 'next-auth/providers/github'
+import EmailProvider from 'next-auth/providers/email'
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
+import clientPromise from '../../../database/connectDB'
 
 export default NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
-  providers: [
-    SpotifyProvider({
-      clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
-      clientSecret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-      authorization: SPOTIFY_AUTHORIZATION_URL
-    })
-  ],
-  callbacks: {
-    async jwt({ token, user, account }) {
-      // Initial sign in
-      if (account && user) {
-        return {
-          accessToken: account.access_token,
-          accessTokenExpires: Date.now() + account.expires_in * 1000,
-          refreshToken: account.refresh_token,
-          user
-        }
-      }
+	providers: [
+		SpotifyProvider({
+			clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+			clientSecret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
+		}),
 
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < token.accessTokenExpires) {
-        return token
-      }
-
-      // Access token has expired, try to update it
-      return refreshAccessToken(token)
-    },
-    async session({ session, token }) {
-      session.user = token.user
-      session.accessToken = token.accessToken
-      session.error = token.error
-
-      return session
-    }
-  }
+		EmailProvider({
+			server: {
+				host: process.env.EMAIL_SERVER_HOST,
+				port: process.env.EMAIL_SERVER_PORT,
+				auth: {
+					user: process.env.EMAIL_SERVER_USER,
+					pass: process.env.EMAIL_SERVER_PASSWORD,
+				},
+			},
+			from: process.env.EMAIL_FROM,
+		}),
+	],
+	pages: {
+		signIn: '/auth/signin',
+	},
+	adapter: MongoDBAdapter(clientPromise),
 })
 
 // import NextAuth from 'next-auth'
