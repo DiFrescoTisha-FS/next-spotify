@@ -1,5 +1,8 @@
 import NextAuth from 'next-auth'
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
+import clientPromise from '../../../lib/mongodb'
 import SpotifyProvider from 'next-auth/providers/spotify'
+
 
 const SPOTIFY_AUTHORIZATION_URL =
   'https://accounts.spotify.com/authorize?' +
@@ -36,7 +39,6 @@ async function refreshAccessToken(token) {
 
     if (!response.ok) {
       throw refreshedTokens
-      console.log(refreshedTokens)
     }
 
     return {
@@ -56,6 +58,7 @@ async function refreshAccessToken(token) {
 }
 
 export default NextAuth({
+    adapter: MongoDBAdapter(clientPromise),
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     SpotifyProvider({
