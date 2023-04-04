@@ -68,6 +68,14 @@ export default NextAuth({
       authorization: SPOTIFY_AUTHORIZATION_URL
     })
   ],
+  database: process.env.MONGODB_URI,
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+  },
   callbacks: {
     async jwt({ token, account, user }) {
 
@@ -79,6 +87,7 @@ export default NextAuth({
                 refreshToken: account.refresh_token,
                 username: account.providerAccountId,
                 accessTokenExpires: account.expires_at * 1000, // we are handling expiry times in milliseconds hence * 1000
+                user
             };
         }
 
