@@ -3,13 +3,26 @@
 
 // import Nav from '../components/Nav'
 // import Login from "./login"
-import Signin from "../components/Signin"
+// import Signin from "../components/Signin"
+// import Login from "./login"
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
+
 import Sidebar from "../components/Sidebar"
+
 export default function Home() {
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      signIn(); // Force sign in to hopefully resolve error
+    }
+  }, [session]);
+
   return (
     <div className="bg-black h-screen overfolw-hidden">
         <main className="">
-        <Signin />
+        {/* <Signin /> */}
         <Sidebar />
         {/* <Login /> */}
           {/* <Nav /> */}

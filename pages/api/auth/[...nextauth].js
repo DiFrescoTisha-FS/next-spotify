@@ -2,7 +2,7 @@ import NextAuth from 'next-auth'
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter'
 import clientPromise from '../../../lib/mongodb'
 import SpotifyProvider from 'next-auth/providers/spotify'
-// import spotifyApi, { LOGIN_URL } from "../../../lib/spotify";
+import spotifyApi, { LOGIN_URL } from "../../../lib/spotify";
 
 
 const SPOTIFY_AUTHORIZATION_URL =
@@ -18,8 +18,15 @@ const SPOTIFY_AUTHORIZATION_URL =
  * `accessToken` and `accessTokenExpires`. If an error occurs,
  * returns the old token and an error property
  */
-async function refreshAccessToken(token) {
+ async function refreshAccessToken(token) {
   try {
+
+    spotifyApi.setAccessToken(token.accessToken);
+    spotifyApi.setRefreshToken(token.refreshToken);
+
+    const { body: refreshedToken } = await spotifyApi.refreshAccessToken();
+    console.log("Refreshed token is", refreshedToken);
+
     const url =
       'https://accounts.spotify.com/api/token?' +
       new URLSearchParams({
@@ -53,7 +60,7 @@ async function refreshAccessToken(token) {
 
     return {
       ...token,
-      error: 'RefreshAccessTokenError'
+      error: "RefreshAccessTokenError",
     }
   }
 }
@@ -108,7 +115,13 @@ export default NextAuth({
       session.error = token.error
 
         return session;
-    }
+    },
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/"
   }
 })
 
