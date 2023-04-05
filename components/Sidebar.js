@@ -9,22 +9,22 @@ import {
   } from "@heroicons/react/outline";
   import { signOut, useSession } from "next-auth/react";
   import { useEffect, useState } from "react";
-//   import useSpotify from "../hooks/useSpotify";
+  import useSpotify from "../hooks/useSpotify";
   
   function Sidebar() {
-    // const spotifyApi = useSpotify();
-    // const { data: session, status } = useSession();
-    // const [playlists, setPlaylists] = useState([]);
+    const spotifyApi = useSpotify();
+    const { data: session, status } = useSession();
+    const [playlists, setPlaylists] = useState([]);
 
-    // useEffect(() => {
-    //     if (spotifyApi.getAccessToken()) {
-    //         spotifyApi.getUserPlaylists().then((data) => {
-    //             setPlaylists(data.body.items);
-    //         });
-    //     }
-    // }, [session, spotifyApi]);
+    useEffect(() => {
+        if (spotifyApi.getAccessToken()) {
+            spotifyApi.getUserPlaylists().then((data) => {
+                setPlaylists(data.body.items);
+            });
+        }
+    }, [session, spotifyApi]);
 
-    // console.log(playlists)
+    console.log(playlists)
 
     return (
         <div className=" bg-black h-screen overflow-hidden text-gray-500 p-5 text-sm border-r border-gray-900 overflow-y-scroll scrollbar-hide h-100vh">
@@ -62,11 +62,11 @@ import {
             <hr className="border-t-[0.1px]" />
   
             {/* Playlists */}
-            {/* {playlists.map((playlist) => (
+            {playlists.map((playlist) => (
                 <p key={playlist.id} className="cursor-pointer hover:text-white">
                     {playlist.name}
                 </p>
-            ))} */}
+            ))}
         </div>
         </div>
     )
