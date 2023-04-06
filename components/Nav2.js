@@ -9,7 +9,7 @@ const Nav2 = ({ user }) => {
   };
 
   return (
-    <nav>
+    <nav className="bg-gray-800">
       <ul>
         <li>
           <Link href="/">
